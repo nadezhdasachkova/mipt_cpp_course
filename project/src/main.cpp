@@ -15,25 +15,42 @@
 #include <fstream>
 #include <print>
 #include <string>
+#include <vector>
 
 int main(int argc, char** argv) {
     // Аргументы разбираются грубо: путь к журналу и ничего больше. Остальное,
     // включая --quiet, добавляется по заданию.
-    if (argc < 2) {
-        std::print(stderr, "использование: nano-edr <журнал.log>\n");
+    bool quiet = false;
+    std::string path;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--quiet") {
+            quiet = true;
+        } else {
+            path = arg;
+        }
+    }
+
+    if (path.empty()) {
+        std::print(stderr, "использование: nano-edr [--quiet] <журнал.log>\n");
         return 2;
     }
 
-    std::ifstream log(argv[1]);
+    std::ifstream log(path);
     if (!log) {
-        std::print(stderr, "не удалось открыть журнал: {}\n", argv[1]);
+        std::print(stderr, "не удалось открыть журнал: {}\n", path);
         return 2;
     }
 
     long long lines = 0;
     long long comments = 0;
     std::string line;
-
+    const std::vector<std::string> signs = {
+        "wscript.exe",
+        ".locked",
+        "certutil.exe",
+        "\\Startup\\",
+    };
     while (std::getline(log, line)) {
         // Счётчик увеличивается до всех проверок: он считает строки файла,
         // а не события. Номер, посчитанный по событиям, бесполезен — по нему
@@ -42,7 +59,14 @@ int main(int argc, char** argv) {
 
         // Строки-комментарии в журнале начинаются с '#'. Они не события,
         // и детекта по ним быть не должно.
-        if (!line.empty() && line[0] == '#') {
+        std::size_t i = 0;
+        while (i < line.size() && (line[i] == ' ' || line[i] == '\t')) {
+            ++i;
+        }
+        if (i == line.size()) {
+            continue;
+        }
+        if (line[i] == '#' || line[i] == ';') {
             ++comments;
             continue;
         }
@@ -51,8 +75,14 @@ int main(int argc, char** argv) {
         //
         // Проверка признаков и печать детекта. Номер строки, который нужен
         // в выводе, — это lines.
+        for (const std::string& s: signs) {
+            if (line.find(s) != std::string::npos) {
+                std::print("[DETECT] строка {}, признак {}: {}\n", lines, s, line);
+            }
+        }
     }
-
-    std::print("строк {}, из них комментариев {}\n", lines, comments);
+        if (!quiet) {
+            std::print("строк {}, из них комментариев {}\n", lines, comments);
+        }
     return 0;
 }
