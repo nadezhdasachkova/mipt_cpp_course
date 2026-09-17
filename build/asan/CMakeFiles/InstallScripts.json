@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/nadezhda/projects/mipt_cpp_course/project/build/asan/cmake_install.cmake",
+		"/home/nadezhda/projects/mipt_cpp_course/project/build/asan/task1_1/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

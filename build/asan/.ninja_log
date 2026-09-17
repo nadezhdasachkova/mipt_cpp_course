@@ -1,0 +1,11 @@
+# ninja log v7
+2	20	1789318320844866494	/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/cmake.verify_globs	912f9166df529345
+21	37	1789318320863866686	CMakeFiles/toolchain	34fecad5904e1835
+21	37	1789318320863866686	/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/toolchain	34fecad5904e1835
+25	1664	1789316557946791894	CMakeFiles/minimal_agent.dir/examples/minimal_agent.cpp.o	a9b31c4c2de15892
+19	193	1789318090009108042	minimal_agent	d95f94d8bb518b78
+1	19	1789318331660976131	/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/cmake.verify_globs	912f9166df529345
+20	36	1789318331679976324	CMakeFiles/toolchain	34fecad5904e1835
+20	36	1789318331679976324	/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/toolchain	34fecad5904e1835
+36	1326	1789318331695976486	CMakeFiles/nano-edr.dir/src/main.cpp.o	f07f6f04d753142d
+1326	1584	1789318332985989563	nano-edr	5786b9cc3fd9ba2a

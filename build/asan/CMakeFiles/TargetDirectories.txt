@@ -1,0 +1,9 @@
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/nano-edr.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/minimal_agent.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/toolchain.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/test.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/edit_cache.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/rebuild_cache.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/task1_1/CMakeFiles/test.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/task1_1/CMakeFiles/edit_cache.dir
+/home/nadezhda/projects/mipt_cpp_course/project/build/asan/task1_1/CMakeFiles/rebuild_cache.dir

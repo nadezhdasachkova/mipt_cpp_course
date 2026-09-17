@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/nadezhda/projects/mipt_cpp_course/project/build/asan",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/projects/mipt_cpp_course/project/src -isystem /home/nadezhda/projects/mipt_cpp_course/project/cmake/../include -g -std=c++23 -fsanitize=address,undefined -fno-omit-frame-pointer -g -Wall -Wextra -o CMakeFiles/nano-edr.dir/src/main.cpp.o -c /home/nadezhda/projects/mipt_cpp_course/project/src/main.cpp",
+  "file": "/home/nadezhda/projects/mipt_cpp_course/project/src/main.cpp",
+  "output": "/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/nano-edr.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/projects/mipt_cpp_course/project/build/asan",
+  "command": "/usr/bin/clang++ -DOS_USE_SHARED -isystem /home/nadezhda/projects/mipt_cpp_course/project/cmake/../include -g -std=c++23 -fsanitize=address,undefined -fno-omit-frame-pointer -g -Wall -Wextra -o CMakeFiles/minimal_agent.dir/examples/minimal_agent.cpp.o -c /home/nadezhda/projects/mipt_cpp_course/project/examples/minimal_agent.cpp",
+  "file": "/home/nadezhda/projects/mipt_cpp_course/project/examples/minimal_agent.cpp",
+  "output": "/home/nadezhda/projects/mipt_cpp_course/project/build/asan/CMakeFiles/minimal_agent.dir/examples/minimal_agent.cpp.o"
+}
+]
