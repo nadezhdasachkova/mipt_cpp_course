@@ -1,0 +1,18 @@
+# ninja log v7
+2	23	1789982998985233055	/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/cmake.verify_globs	8ee734c379040c2a
+24	38	1789982999007298925	CMakeFiles/toolchain	4a0bb0a7243e51d4
+24	38	1789982999007298925	/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/toolchain	4a0bb0a7243e51d4
+23	544	1789982999005103620	CMakeFiles/nano_edr_core.dir/src/event_list.cpp.o	a7db81bcf3753e4d
+26	651	1789982999008925230	task1_2/CMakeFiles/task1_2_tests.dir/list_tests.cpp.o	c8311c7ca7081507
+24	714	1789982999006319198	CMakeFiles/nano_edr_core.dir/src/parse.cpp.o	2ea74419a88378df
+714	774	1789982999696102472	libnano_edr_core.a	1843dee6275a857c
+26	817	1789982999009311442	task1_2/CMakeFiles/task1_2_tests.dir/parse_tests.cpp.o	67f3a88c279cf728
+25	1837	1789982999007979582	CMakeFiles/minimal_agent.dir/examples/minimal_agent.cpp.o	8f19e41b786c235c
+1837	1978	1789983000819100605	minimal_agent	68727d5d2c04e7c7
+38	2228	1789982999020103595	CMakeFiles/nano-edr.dir/src/main.cpp.o	24025a74bf5acf32
+2228	2342	1789983001210099956	nano-edr	b262b01cf71e261e
+25	3520	1789982999008346260	task1_2/CMakeFiles/task1_2_tests.dir/__/__/__/tests/doctest_main.cpp.o	e5c87e75f8bb3e80
+3520	3649	1789983002502097808	task1_2_tests	d2c5922c60e79099
+3	21	1789983150676851576	/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/cmake.verify_globs	8ee734c379040c2a
+23	39	1789983150696851543	CMakeFiles/toolchain	4a0bb0a7243e51d4
+23	39	1789983150696851543	/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/toolchain	4a0bb0a7243e51d4

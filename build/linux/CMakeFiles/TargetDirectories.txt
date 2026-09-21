@@ -1,0 +1,14 @@
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/nano_edr_core.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/nano-edr.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/minimal_agent.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/toolchain.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/test.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/edit_cache.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/rebuild_cache.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_1/CMakeFiles/test.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_1/CMakeFiles/edit_cache.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_1/CMakeFiles/rebuild_cache.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/task1_2_tests.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/test.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/edit_cache.dir
+/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/rebuild_cache.dir

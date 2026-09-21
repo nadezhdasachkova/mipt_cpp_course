@@ -1,0 +1,44 @@
+[
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/mipt/mipt_cpp_course/src -I/home/nadezhda/mipt/mipt_cpp_course/kit/include/l1.2 -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wall -Wextra -o CMakeFiles/nano_edr_core.dir/src/event_list.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/src/event_list.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/src/event_list.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/nano_edr_core.dir/src/event_list.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/mipt/mipt_cpp_course/src -I/home/nadezhda/mipt/mipt_cpp_course/kit/include/l1.2 -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wall -Wextra -o CMakeFiles/nano_edr_core.dir/src/parse.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/src/parse.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/src/parse.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/nano_edr_core.dir/src/parse.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/mipt/mipt_cpp_course/src -I/home/nadezhda/mipt/mipt_cpp_course/kit/include/l1.2 -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wall -Wextra -o CMakeFiles/nano-edr.dir/src/main.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/src/main.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/src/main.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/nano-edr.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DOS_USE_SHARED -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wall -Wextra -o CMakeFiles/minimal_agent.dir/examples/minimal_agent.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/examples/minimal_agent.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/examples/minimal_agent.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/CMakeFiles/minimal_agent.dir/examples/minimal_agent.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/mipt/mipt_cpp_course/tests/third_party -I/home/nadezhda/mipt/mipt_cpp_course/src -I/home/nadezhda/mipt/mipt_cpp_course/kit/include/l1.2 -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wno-old-style-cast -o task1_2/CMakeFiles/task1_2_tests.dir/__/__/__/tests/doctest_main.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/tests/doctest_main.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/tests/doctest_main.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/task1_2_tests.dir/__/__/__/tests/doctest_main.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/mipt/mipt_cpp_course/tests/third_party -I/home/nadezhda/mipt/mipt_cpp_course/src -I/home/nadezhda/mipt/mipt_cpp_course/kit/include/l1.2 -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wno-old-style-cast -o task1_2/CMakeFiles/task1_2_tests.dir/list_tests.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/tasks/1.2/tests/list_tests.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/tasks/1.2/tests/list_tests.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/task1_2_tests.dir/list_tests.cpp.o"
+},
+{
+  "directory": "/home/nadezhda/mipt/mipt_cpp_course/build/linux",
+  "command": "/usr/bin/clang++ -DEDR_USE_SHARED -DOS_USE_SHARED -I/home/nadezhda/mipt/mipt_cpp_course/tests/third_party -I/home/nadezhda/mipt/mipt_cpp_course/src -I/home/nadezhda/mipt/mipt_cpp_course/kit/include/l1.2 -isystem /home/nadezhda/mipt/mipt_cpp_course/cmake/../include -O3 -DNDEBUG -std=c++23 -Wno-old-style-cast -o task1_2/CMakeFiles/task1_2_tests.dir/parse_tests.cpp.o -c /home/nadezhda/mipt/mipt_cpp_course/tasks/1.2/tests/parse_tests.cpp",
+  "file": "/home/nadezhda/mipt/mipt_cpp_course/tasks/1.2/tests/parse_tests.cpp",
+  "output": "/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/CMakeFiles/task1_2_tests.dir/parse_tests.cpp.o"
+}
+]

@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/nadezhda/mipt/mipt_cpp_course/build/linux/cmake_install.cmake",
+		"/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_1/cmake_install.cmake",
+		"/home/nadezhda/mipt/mipt_cpp_course/build/linux/task1_2/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
