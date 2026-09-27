@@ -7,6 +7,8 @@
 #include "event.h"
 #include "event_list.h"
 #include "parse.h"
+#include "rules.h"
+#include "agent_rules.h"
 using namespace nano_edr;
 static void PrintContext(const EventList& window) {
     const EventNode* prev = nullptr;
@@ -27,6 +29,7 @@ static void PrintContext(const EventList& window) {
     }
 }
 int main(int argc, char** argv) {
+    try {
     bool quiet = false;
     std::string path;
     std::size_t windowSize = 64;
@@ -65,12 +68,6 @@ int main(int argc, char** argv) {
     window.capacity = windowSize;
     long long lines = 0;
     std::string line;
-    const std::vector<std::string> signs = {
-        "wscript.exe",
-        ".locked",
-        "certutil.exe",
-        "\\Startup\\",
-    };
     while (std::getline(log, line)) {
         ++lines;
         if (IsBlankOrComment(&line)) {
@@ -80,14 +77,7 @@ int main(int argc, char** argv) {
         if (!ParseEventLine(&line, &event)) {
             continue;
         }
-        bool detectedAny = false;
-        for (const std::string& s : signs) {
-            if (line.find(s) != std::string::npos) {
-                std::print("[DETECT] строка {}, признак {}: {}\n", lines, s, line);
-                detectedAny = true;
-            }
-        }
-        if (detectedAny && !quiet) {
+        if (CheckRules(event, AgentRules(), AgentRuleCount())&& !quiet) {
             PrintContext(window);
         }
         ListPushBack(&window, &event);
@@ -96,4 +86,9 @@ int main(int argc, char** argv) {
         std::print("строк {}\n", lines);
     }
     return 0;
+}
+catch (const std::exception& error) {
+    std::print(stderr, "ошибка{}\n", error.what());
+    return 1;
+}
 }
