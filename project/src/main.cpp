@@ -1,99 +1,56 @@
 #include <charconv>
 #include <cstdio>
-#include <fstream>
 #include <print>
+#include <stdexcept>
 #include <string>
-#include <vector>
-#include "event.h"
-#include "event_list.h"
-#include "parse.h"
+#include "agent.h"
+#include "sources.h"
 using namespace nano_edr;
-static void PrintContext(const EventList& window) {
-    const EventNode* prev = nullptr;
-    const EventNode* last = nullptr; 
-
-    for (const EventNode* node = window.head; node != nullptr; node = node->next) {
-        prev = last;
-        last = node;
-    }
-
-    if (prev != nullptr) {
-        std::print("[CTX] -2: ts={} type={} pid={}\n",
-                   prev->event.ts, prev->event.type, prev->event.pid);
-    }
-    if (last != nullptr) {
-        std::print("[CTX] -1: ts={} type={} pid={}\n",
-                   last->event.ts, last->event.type, last->event.pid);
-    }
-}
 int main(int argc, char** argv) {
-    bool quiet = false;
-    std::string path;
-    std::size_t windowSize = 64;
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "--quiet") {
-            quiet = true;
-        } else if (arg == "--window-size") {
-            if (i + 1 >= argc) {
-                std::print(stderr, "использование: --window-size требует число\n");
+    try {
+        bool quiet = false;
+        bool use_file = false;
+        std::string path;
+        std::size_t window_size = 64;
+        for (int i = 1; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg == "--quiet") {
+                quiet = true;
+            } else if (arg == "--file") {
+                use_file = true;
+            } else if (arg == "--window-size") {
+                if (i + 1 >= argc) {
+                    std::print(stderr, "нужно число после --window-size\n");
+                    return 2;
+                }
+                std::string num = argv[++i];
+                std::size_t v = 0;
+                auto [ptr, ec] = std::from_chars(num.data(), num.data() + num.size(), v);
+                if (ec != std::errc{} || ptr != num.data() + num.size()) {
+                    std::print(stderr, "неверное значение --window-size: {}\n", num);
+                    return 2;
+                }
+                window_size = v;
+            } else if (!arg.empty() && arg[0] == '-') {
+                std::print(stderr, "неизвестная опция: {}\n", arg);
                 return 2;
-            }
-            std::string num = argv[++i];
-            std::size_t value = 0;
-            auto [ptr, ec] = std::from_chars(num.data(),
-                                             num.data() + num.size(), value);
-            if (ec != std::errc{} || ptr != num.data() + num.size()) {
-                std::print(stderr, "неверное значение --window-size: {}\n", num);
+            } else if (!path.empty()) {
+                std::print(stderr, "путь указан дважды: {}\n", arg);
                 return 2;
-            }
-            windowSize = value;
-        } else {
-            path = arg;
-        }
-    }
-    if (path.empty()) {
-        std::print(stderr, "использование: nano-edr [--quiet] [--window-size N] <журнал.log>\n");
-        return 2;
-    }
-    std::ifstream log(path);
-    if (!log) {
-        std::print(stderr, "не удалось открыть журнал: {}\n", path);
-        return 2;
-    }
-    EventList window;
-    window.capacity = windowSize;
-    long long lines = 0;
-    std::string line;
-    const std::vector<std::string> signs = {
-        "wscript.exe",
-        ".locked",
-        "certutil.exe",
-        "\\Startup\\",
-    };
-    while (std::getline(log, line)) {
-        ++lines;
-        if (IsBlankOrComment(&line)) {
-            continue;
-        }
-        Event event;
-        if (!ParseEventLine(&line, &event)) {
-            continue;
-        }
-        bool detectedAny = false;
-        for (const std::string& s : signs) {
-            if (line.find(s) != std::string::npos) {
-                std::print("[DETECT] строка {}, признак {}: {}\n", lines, s, line);
-                detectedAny = true;
+            } else {
+                path = arg;
             }
         }
-        if (detectedAny && !quiet) {
-            PrintContext(window);
+        if (path.empty()) {
+            std::print(stderr,
+                "использование: nano-edr [--quiet] [--file] [--window-size N] <сценарий>\n");
+            return 2;
         }
-        ListPushBack(&window, &event);
+        Agent agent(window_size, quiet);
+        if (use_file) return RunFileSource(path, agent);
+        return RunOsSource(path, agent);
+    } catch (const std::exception& e) {
+        std::print(stderr, "ошибка: {}\n", e.what());
+        return 1;
     }
-    if (!quiet) {
-        std::print("строк {}\n", lines);
-    }
-    return 0;
 }

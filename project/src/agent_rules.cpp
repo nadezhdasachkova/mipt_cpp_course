@@ -6,12 +6,18 @@ bool ScriptHostFromTemp(const Event& event) {
     if (!IsProcessStart(event)) {
         return false;
     }
-    const std::string& image = GetRequiredField(event, "image");
-    std::string image_normalize = NormalizePath(image);
-    if (image_normalize.ends_with("wscript.exe") || image_normalize.ends_with("cscript.exe")) {
-        if (CommandLineContains(event, "\\appdata\\local\\temp\\") || CommandLineContains(event, "\\windows\\temp\\")) {
-            return true;
-        }
+    const std::string* image_ptr = FindField(event, "image");
+    if (image_ptr == nullptr) {
+        return false;
+    }
+    const std::string image = NormalizePath(*image_ptr);
+    if (image.find("wscript.exe") == std::string::npos &&
+        image.find("cscript.exe") == std::string::npos) {
+        return false;
+    }
+    if (CommandLineContains(event, "\\appdata\\local\\temp\\") ||
+        CommandLineContains(event, "\\windows\\temp\\")) {
+        return true;
     }
     return false;
 }
@@ -35,7 +41,7 @@ bool HiddenPowershell(const Event& event) {
     const std::string& image = GetRequiredField(event, "image");
     std::string image_normalize = NormalizePath(image);
     if (image_normalize.ends_with("powershell.exe") || image_normalize.ends_with("pwsh.exe")) {
-        if (CommandLineContains(event, "-w hidden") || CommandLineContains(event, "-windowstyle hodden") || CommandLineContains(event, "-enc") || CommandLineContains(event, "-encodedcommand")) {
+        if (CommandLineContains(event, "-w hidden") || CommandLineContains(event, "-windowstyle hidden") || CommandLineContains(event, "-enc") || CommandLineContains(event, "-encodedcommand")) {
             return true;
         }
     }
@@ -43,9 +49,9 @@ bool HiddenPowershell(const Event& event) {
 }
 bool AutostartWrite(const Event& event) {
     const char* field = nullptr;
-    if (event.type == "file_create" || event.type == "file_write") {
+    if (event.type() == "file_create" || event.type() == "file_write") {
         field = "path";
-    } else if (event.type == "file_move") {
+    } else if (event.type() == "file_move") {
         field = "to";
     } else {
         return false;
@@ -59,9 +65,9 @@ bool AutostartWrite(const Event& event) {
 }
 bool RansomExtension(const Event& event) {
     const char* field = nullptr;
-    if (event.type == "file_create" || event.type == "file_write") {
+    if (event.type() == "file_create" || event.type() == "file_write") {
         field = "path";
-    } else if (event.type == "file_move") {
+    } else if (event.type() == "file_move") {
         field = "to";
     } else {
         return false;
