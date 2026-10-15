@@ -1,6 +1,7 @@
 #include "event.h"
+
 #include <charconv>
-#include <sstream>
+#include <ostream>
 #include <stdexcept>
 namespace nano_edr {
 Event::Event(const EventParts& parts) {
@@ -25,7 +26,6 @@ Event::Event(const EventParts& parts) {
 }
 std::string ToString(const Event& event) {
     std::string out;
-    out.reserve(64);
     out += "ts=";
     out += event.raw_ts();
     out += " type=";
@@ -45,4 +45,4 @@ std::string ToString(const Event& event) {
 std::ostream& operator<<(std::ostream& out, const Event& event) {
     return out << ToString(event);
 }
-}
+}  // namespace nano_edr

@@ -11,7 +11,7 @@ void EventList::PushBack(const Event& event) {
     if (tail_ == nullptr) {
         head_ = node;
     } else {
-        tail_->next =node;
+        tail_->next = node;
     }
     tail_ = node;
     ++size_;

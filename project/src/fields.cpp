@@ -1,4 +1,5 @@
 #include "fields.h"
+
 #include <cctype>
 #include <charconv>
 #include <stdexcept>
@@ -53,7 +54,7 @@ bool IsProcessStart(const Event& event) {
     return event.type() == "process_start";
 }
 bool IsFileWrite(const Event& event) {
-    return event.type() == "file_create" || event.type() == "file_write" || event.type() == "file_move";
+    return event.type() == "file_write";
 }
 bool IsNetConnect(const Event& event) {
     return event.type() == "net_connect";
@@ -68,7 +69,7 @@ std::string NormalizePath(const std::string& path) {
     std::size_t pos = result.find("%temp%");
     while (pos != std::string::npos) {
         result.replace(pos, 6, kTemp);
-        pos = result.find("%temp%", pos + kTemp.size());    
+        pos = result.find("%temp%", pos + kTemp.size());
     }
     pos = result.find("%tmp%");
     while (pos != std::string::npos) {
@@ -107,4 +108,4 @@ bool CommandLineContains(const Event& event, const std::string& needle) {
     }
     return NormalizePath(*cmdline).find(NormalizePath(needle)) != std::string::npos;
 }
-}
+}  // namespace nano_edr

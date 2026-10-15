@@ -1,78 +1,66 @@
 #include "agent_rules.h"
-#include "fields.h"
+
 #include <iterator>
+#include <string>
+#include <cstddef>
+
+#include "fields.h"
 namespace nano_edr {
+static bool ImageEndsWith(const std::string& image, const char* name) {
+    return image.ends_with(name);
+}
+static const std::string* FilePathField(const Event& event) {
+    if (event.type() == "file_create" || event.type() == "file_write") {
+        return FindField(event, "path");
+    }
+    if (event.type() == "file_move") {
+        return FindField(event, "to");
+    }
+    return nullptr;
+}
 bool ScriptHostFromTemp(const Event& event) {
     if (!IsProcessStart(event)) {
         return false;
     }
-    const std::string* image_ptr = FindField(event, "image");
-    if (image_ptr == nullptr) {
+    const std::string* image = FindField(event, "image");
+    if (image == nullptr) {
         return false;
     }
-    const std::string image = NormalizePath(*image_ptr);
-    if (image.find("wscript.exe") == std::string::npos &&
-        image.find("cscript.exe") == std::string::npos) {
+    const std::string norm = NormalizePath(*image);
+    if (!ImageEndsWith(norm, "wscript.exe") && !ImageEndsWith(norm, "cscript.exe")) {
         return false;
     }
-    if (CommandLineContains(event, "\\appdata\\local\\temp\\") ||
-        CommandLineContains(event, "\\windows\\temp\\")) {
-        return true;
-    }
-    return false;
+    return CommandLineContains(event, "\\appdata\\local\\temp\\") || CommandLineContains(event, "\\windows\\temp\\");
 }
 bool LolbinDownload(const Event& event) {
     if (!IsProcessStart(event)) {
         return false;
     }
-    const std::string& image = GetRequiredField(event, "image");
-    std::string image_normalize = NormalizePath(image);
-    if (image_normalize.ends_with("certutil.exe") || image_normalize.ends_with("bitsadmin.exe")) {
-        if (CommandLineContains(event, "urlcache") || CommandLineContains(event, "transfer") || CommandLineContains(event, "http:") || CommandLineContains(event, "https:")) {
-            return true;
-        }
+    const std::string norm = NormalizePath(GetRequiredField(event, "image"));
+    if (!ImageEndsWith(norm, "certutil.exe") && !ImageEndsWith(norm, "bitsadmin.exe")) {
+        return false;
     }
-    return false;
+    return CommandLineContains(event, "urlcache") || CommandLineContains(event, "transfer") || CommandLineContains(event, "http:") || CommandLineContains(event, "https:");
 }
 bool HiddenPowershell(const Event& event) {
     if (!IsProcessStart(event)) {
         return false;
     }
-    const std::string& image = GetRequiredField(event, "image");
-    std::string image_normalize = NormalizePath(image);
-    if (image_normalize.ends_with("powershell.exe") || image_normalize.ends_with("pwsh.exe")) {
-        if (CommandLineContains(event, "-w hidden") || CommandLineContains(event, "-windowstyle hidden") || CommandLineContains(event, "-enc") || CommandLineContains(event, "-encodedcommand")) {
-            return true;
-        }
-    }
-    return false;
-}
-bool AutostartWrite(const Event& event) {
-    const char* field = nullptr;
-    if (event.type() == "file_create" || event.type() == "file_write") {
-        field = "path";
-    } else if (event.type() == "file_move") {
-        field = "to";
-    } else {
+    const std::string norm = NormalizePath(GetRequiredField(event, "image"));
+    if (!ImageEndsWith(norm, "powershell.exe") && !ImageEndsWith(norm, "pwsh.exe")) {
         return false;
     }
-    const std::string* path = FindField(event, field);
+    return CommandLineContains(event, "-w hidden") || CommandLineContains(event, "-windowstyle hidden") || CommandLineContains(event, "-enc") || CommandLineContains(event, "-encodedcommand");
+}
+bool AutostartWrite(const Event& event) {
+    const std::string* path = FilePathField(event);
     if (path == nullptr) {
         return false;
     }
-    const std::string path_normalize = NormalizePath(*path);
-    return path_normalize.find("\\start menu\\programs\\startup\\") != std::string::npos;
+    return NormalizePath(*path).find("\\start menu\\programs\\startup\\") != std::string::npos;
 }
 bool RansomExtension(const Event& event) {
-    const char* field = nullptr;
-    if (event.type() == "file_create" || event.type() == "file_write") {
-        field = "path";
-    } else if (event.type() == "file_move") {
-        field = "to";
-    } else {
-        return false;
-    }
-    const std::string* path = FindField(event, field);
+    const std::string* path = FilePathField(event);
     if (path == nullptr) {
         return false;
     }
@@ -91,4 +79,4 @@ const Rule* AgentRules() {
 size_t AgentRuleCount() {
     return std::size(kRules);
 }
-}
+}  // namespace nano_edr

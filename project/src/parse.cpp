@@ -1,4 +1,5 @@
 #include "parse.h"
+
 #include <utility>
 #include <vector>
 namespace nano_edr {
@@ -6,13 +7,13 @@ namespace {
 bool IsSpace(char c) {
     return c == ' ' || c == '\t';
 }
-}
+}  // namespace
 bool IsBlankOrComment(const std::string& line) {
     std::size_t i = 0;
     while (i < line.size() && IsSpace(line[i])) {
         ++i;
     }
-    if (i ==line.size()) {
+    if (i == line.size()) {
         return true;
     }
     return line[i] == '#' || line[i] == ';';
@@ -72,8 +73,7 @@ bool ParseEventParts(const std::string& line, EventParts* out) {
         }
         pairs.push_back(Field{
             line.substr(keyStart, keyEnd - keyStart),
-            std::move(value)
-        });
+            std::move(value)});
     }
     bool haveTs = false;
     bool haveType = false;
@@ -94,4 +94,4 @@ bool ParseEventParts(const std::string& line, EventParts* out) {
     }
     return true;
 }
-}
+}  // namespace nano_edr

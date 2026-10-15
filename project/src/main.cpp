@@ -3,6 +3,7 @@
 #include <print>
 #include <stdexcept>
 #include <string>
+
 #include "agent.h"
 #include "sources.h"
 using namespace nano_edr;
@@ -43,12 +44,19 @@ int main(int argc, char** argv) {
         }
         if (path.empty()) {
             std::print(stderr,
-                "использование: nano-edr [--quiet] [--file] [--window-size N] <сценарий>\n");
+                       "использование: nano-edr [--quiet] [--file] [--window-size N] <сценарий>\n");
             return 2;
         }
         Agent agent(window_size, quiet);
-        if (use_file) return RunFileSource(path, agent);
-        return RunOsSource(path, agent);
+        if (use_file) {
+            FileSource source(path);
+            source.Run(&agent);
+        } else {
+            OsSource source(path);
+            source.Run(&agent);
+        }
+        agent.PrintSummary();
+        return 0;
     } catch (const std::exception& e) {
         std::print(stderr, "ошибка: {}\n", e.what());
         return 1;

@@ -1,4 +1,5 @@
 #include "os_handle.h"
+
 #include <stdexcept>
 namespace nano_edr {
 OsHandle::OsHandle(const std::string& config_path) {
@@ -31,4 +32,4 @@ os_status OsHandle::Wait(uint32_t timeout_ms) {
 void OsHandle::Stop() {
     os_stop(handle_);
 }
-}
+}  // namespace nano_edr
