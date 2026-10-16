@@ -1,59 +1,42 @@
 #include "event_list.h"
-
 namespace nano_edr {
-
 EventList::~EventList() {
-    ListClear(this);
+    Clear();
 }
-
-void ListPushBack(EventList* list, const Event* event) {
-    if (list == nullptr || event == nullptr) return;
-
-    if (list->capacity != 0 && list->size >= list->capacity) {
-        ListPopFront(list);
+void EventList::PushBack(const Event& event) {
+    if (capacity_ != 0 && size_ >= capacity_) {
+        PopFront();
     }
-
-    EventNode* node = new EventNode;
-    node->event = *event;
-    node->next = nullptr;
-
-    if (list->tail == nullptr) {
-        list->head = node;
+    EventNode* node = new EventNode(event);
+    if (tail_ == nullptr) {
+        head_ = node;
     } else {
-        list->tail->next = node;
+        tail_->next = node;
     }
-
-    list->tail = node;
-    ++list->size;
+    tail_ = node;
+    ++size_;
 }
-
-void ListPopFront(EventList* list) {
-    if (list == nullptr || list->head == nullptr) return;
-
-    EventNode* old = list->head;
-    list->head = old->next;
-
-    if (list->head == nullptr) {
-        list->tail = nullptr;
+void EventList::PopFront() {
+    if (head_ == nullptr) {
+        return;
     }
-
+    EventNode* old = head_;
+    head_ = old->next;
+    if (head_ == nullptr) {
+        tail_ = nullptr;
+    }
     delete old;
-    --list->size;
+    --size_;
 }
-
-void ListClear(EventList* list) {
-    if (list == nullptr) return;
-
-    EventNode* cur = list->head;
+void EventList::Clear() {
+    EventNode* cur = head_;
     while (cur != nullptr) {
         EventNode* next = cur->next;
         delete cur;
         cur = next;
     }
-
-    list->head = nullptr;
-    list->tail = nullptr;
-    list->size = 0;
+    head_ = nullptr;
+    tail_ = nullptr;
+    size_ = 0;
 }
-
 } 

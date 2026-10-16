@@ -1,0 +1,14 @@
+#ifndef NANO_EDR_SOURCES_H
+#define NANO_EDR_SOURCES_H
+#include <string>
+#include "agent.h"
+namespace nano_edr {
+class FileSource {
+    public:
+        explicit FileSource(std::string path);
+        void Run(Agent* agent);
+    private:
+        std::string path_;
+};
+} 
+#endif
