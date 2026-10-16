@@ -5,7 +5,8 @@
 #include <string>
 
 #include "agent.h"
-#include "sources.h"
+#include "file_source.h"
+#include "os_source.h"
 using namespace nano_edr;
 int main(int argc, char** argv) {
     try {
