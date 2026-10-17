@@ -1,82 +1,73 @@
 #include "agent_rules.h"
 
-#include <iterator>
-#include <string>
-#include <cstddef>
+#include "conditions.h"
 
-#include "fields.h"
 namespace nano_edr {
-static bool ImageEndsWith(const std::string& image, const char* name) {
-    return image.ends_with(name);
+namespace {
+MatchRule MakeScriptHostFromTemp() {
+    MatchRule rule("script_host_from_temp", Severity::kHigh);
+    rule.AddCondition(Condition::Equals("type", {"process_start"}));
+    rule.AddCondition(Condition::EndsWith("image", {"wscript.exe", "cscript.exe"}));
+    rule.AddCondition(Condition::Contains("cmdline", {
+        "\\appdata\\local\\temp\\", "/appdata/local/temp/", "\\windows\\temp\\", "/windows/temp/", "%temp%", "%tmp%"}));
+    rule.AddAction("kill_process");
+    return rule;
 }
-static const std::string* FilePathField(const Event& event) {
-    if (event.type() == "file_create" || event.type() == "file_write") {
-        return FindField(event, "path");
-    }
-    if (event.type() == "file_move") {
-        return FindField(event, "to");
-    }
-    return nullptr;
+MatchRule MakeLolbinDownload() {
+    MatchRule rule("lolbin_download", Severity::kHigh);
+    rule.AddCondition(Condition::Equals("type", {"process_start"}));
+    rule.AddCondition(Condition::EndsWith("image", {"certutil.exe", "bitsadmin.exe"}));
+    rule.AddCondition(Condition::Contains("cmdline", {"urlcache", "transfer", "http:", "https:"}));
+    rule.AddAction("kill_process");
+    return rule;
 }
-bool ScriptHostFromTemp(const Event& event) {
-    if (!IsProcessStart(event)) {
-        return false;
-    }
-    const std::string* image = FindField(event, "image");
-    if (image == nullptr) {
-        return false;
-    }
-    const std::string norm = NormalizePath(*image);
-    if (!ImageEndsWith(norm, "wscript.exe") && !ImageEndsWith(norm, "cscript.exe")) {
-        return false;
-    }
-    return CommandLineContains(event, "\\appdata\\local\\temp\\") || CommandLineContains(event, "\\windows\\temp\\");
+MatchRule MakeHiddenPowershell() {
+    MatchRule rule("hidden_powershell", Severity::kMedium);
+    rule.AddCondition(Condition::Equals("type", {"process_start"}));
+    rule.AddCondition(Condition::EndsWith("image", {"powershell.exe", "pwsh.exe"}));
+    rule.AddCondition(Condition::Contains("cmdline", {"-w hidden", "-windowstyle hidden", "-enc", "-encodedcommand"}));
+    rule.AddAction("kill_process");
+    return rule;
 }
-bool LolbinDownload(const Event& event) {
-    if (!IsProcessStart(event)) {
-        return false;
-    }
-    const std::string norm = NormalizePath(GetRequiredField(event, "image"));
-    if (!ImageEndsWith(norm, "certutil.exe") && !ImageEndsWith(norm, "bitsadmin.exe")) {
-        return false;
-    }
-    return CommandLineContains(event, "urlcache") || CommandLineContains(event, "transfer") || CommandLineContains(event, "http:") || CommandLineContains(event, "https:");
+MatchRule MakeAutostartWriteByPath() {
+    MatchRule rule("autostart_write", Severity::kHigh);
+    rule.AddCondition(Condition::Equals("type", {"file_create", "file_write"}));
+    rule.AddCondition(Condition::Contains("path", {"\\start menu\\programs\\startup\\", "/start menu/programs/startup/"}));
+    rule.AddAction("quarantine_file");
+    return rule;
 }
-bool HiddenPowershell(const Event& event) {
-    if (!IsProcessStart(event)) {
-        return false;
-    }
-    const std::string norm = NormalizePath(GetRequiredField(event, "image"));
-    if (!ImageEndsWith(norm, "powershell.exe") && !ImageEndsWith(norm, "pwsh.exe")) {
-        return false;
-    }
-    return CommandLineContains(event, "-w hidden") || CommandLineContains(event, "-windowstyle hidden") || CommandLineContains(event, "-enc") || CommandLineContains(event, "-encodedcommand");
+MatchRule MakeAutostartWriteByTo() {
+    MatchRule rule("autostart_write", Severity::kHigh);
+    rule.AddCondition(Condition::Equals("type", {"file_move"}));
+    rule.AddCondition(Condition::Contains("to", {"\\start menu\\programs\\startup\\", "/start menu/programs/startup/"}));
+    rule.AddAction("quarantine_file");
+    return rule;
 }
-bool AutostartWrite(const Event& event) {
-    const std::string* path = FilePathField(event);
-    if (path == nullptr) {
-        return false;
-    }
-    return NormalizePath(*path).find("\\start menu\\programs\\startup\\") != std::string::npos;
+MatchRule MakeRansomExtensionByPath() {
+    MatchRule rule("ransom_extension", Severity::kCritical);
+    rule.AddCondition(Condition::Equals("type", {"file_create", "file_write"}));
+    rule.AddCondition(Condition::EndsWith("path", {".locked"}));
+    rule.AddAction("quarantine_file");
+    return rule;
 }
-bool RansomExtension(const Event& event) {
-    const std::string* path = FilePathField(event);
-    if (path == nullptr) {
-        return false;
-    }
-    return NormalizePath(*path).ends_with(".locked");
+MatchRule MakeRansomExtensionByTo() {
+    MatchRule rule("ransom_extension", Severity::kCritical);
+    rule.AddCondition(Condition::Equals("type", {"file_move"}));
+    rule.AddCondition(Condition::EndsWith("to", {".locked"}));
+    rule.AddAction("quarantine_file");
+    return rule;
 }
-constexpr Rule kRules[] = {
-    {"script_host_from_temp", ScriptHostFromTemp, Severity::kHigh},
-    {"lolbin_download", LolbinDownload, Severity::kHigh},
-    {"hidden_powershell", HiddenPowershell, Severity::kMedium},
-    {"autostart_write", AutostartWrite, Severity::kHigh},
-    {"ransom_extension", RansomExtension, Severity::kCritical},
-};
-const Rule* AgentRules() {
-    return kRules;
-}
-size_t AgentRuleCount() {
-    return std::size(kRules);
+} 
+std::vector<MatchRule> BuildAgentRules() {
+    std::vector<MatchRule> rules;
+    rules.reserve(7);
+    rules.push_back(MakeScriptHostFromTemp());
+    rules.push_back(MakeLolbinDownload());
+    rules.push_back(MakeHiddenPowershell());
+    rules.push_back(MakeAutostartWriteByPath());
+    rules.push_back(MakeAutostartWriteByTo());
+    rules.push_back(MakeRansomExtensionByPath());
+    rules.push_back(MakeRansomExtensionByTo());
+    return rules;
 }
 }  // namespace nano_edr
