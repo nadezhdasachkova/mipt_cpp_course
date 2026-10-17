@@ -3,6 +3,7 @@
 #include <cctype>
 #include <charconv>
 #include <stdexcept>
+#include "text.h"
 namespace nano_edr {
 const std::string* FindField(const Event& event, const std::string& key) {
     if (key == "ts") {
@@ -99,13 +100,13 @@ bool PathEndsWith(const Event& event, const std::string& suffix) {
     if (np.size() < ns.size()) {
         return false;
     }
-    return np.compare(np.size() - ns.size(), ns.size(), ns) == 0;
+    return EndsWithIgnoreCase(NormalizePath(*path), NormalizePath(suffix));
 }
 bool CommandLineContains(const Event& event, const std::string& needle) {
     const std::string* cmdline = FindField(event, "cmdline");
     if (cmdline == nullptr) {
         return false;
     }
-    return NormalizePath(*cmdline).find(NormalizePath(needle)) != std::string::npos;
+    return ContainsIgnoreCase(NormalizePath(*cmdline), NormalizePath(needle));
 }
 }  // namespace nano_edr

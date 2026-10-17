@@ -11,7 +11,7 @@
 #include "rules.h"
 namespace nano_edr {
 Agent::Agent(std::size_t window_size, bool quiet)
-    : window_(window_size), quiet_(quiet) {}
+    : window_(window_size), rules_(BuildAgentRules()), quiet_(quiet) {}
 
 void Agent::PrintContext() const {
     if (prev_ != nullptr) {
@@ -41,7 +41,17 @@ void Agent::HandleEvent(const Event& event) {
     if (!found) {
         counts_by_type_.emplace_back(event.type(), 1);
     }
-    const std::size_t fired = CheckRules(event, AgentRules(), AgentRuleCount());
+    std::size_t fired = 0;
+    for (MatchRule& rule : rules_) {
+        if (rule.Check(event)) {
+            std::print("[DETECT] {}  {}  ts={} pid={}\n",
+                       SeverityName(rule.severity()),
+                       rule.id(),
+                       event.raw_ts(),
+                       event.pid());
+            ++fired;
+        }
+    }
     detections_ += fired;
     if (fired > 0 && !quiet_) {
         PrintContext();
@@ -64,6 +74,10 @@ void Agent::PrintSummary() const {
     }
     std::print("детектов: {}\n", detections_);
     std::print("пропущено: {}\n", skipped_);
+    std::print("правила, детектов:\n");
+    for (const MatchRule& rule : rules_) {
+        std::print("  {}  {}\n", rule.id(), rule.hits());
+    }
 }
 void Agent::Trampoline(const os_event* ev, void* ctx) noexcept {
     auto* self = static_cast<Agent*>(ctx);
