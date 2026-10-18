@@ -9,6 +9,7 @@
 #include "event.h"
 #include "event_list.h"
 #include "os.h"
+#include "rule.h"
 namespace nano_edr {
 class Agent {
  public:
@@ -32,6 +33,7 @@ class Agent {
     std::size_t detections_ = 0;
     std::size_t skipped_ = 0;
     std::vector<std::pair<std::string, std::size_t>> counts_by_type_;
+    std::vector<MatchRule> rules_;
     bool quiet_ = false;
 };
 }  // namespace nano_edr
