@@ -24,9 +24,6 @@ bool FieldEndsWith::operator()(const Event& event) const {
     return EndsWithIgnoreCase(*value, suffix_);
 }
 bool FieldInList::operator()(const Event& event) const {
-    if (values_.empty()) {
-        return false;
-    }
     const std::string* value = FindField(event, key_);
     if (value == nullptr) {
         return false;
