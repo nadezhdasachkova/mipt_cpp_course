@@ -48,9 +48,6 @@ Condition Condition::EndsWith(const std::string& key, const std::vector<std::str
     return Condition(Match::kEndsWith, key, values);
 }
 bool Condition::operator()(const Event& event) const {
-    if (values_.empty()) {
-        return false;
-    }
     const std::string* value = FindField(event, key_);
     if (value == nullptr) {
         return false;

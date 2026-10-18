@@ -95,18 +95,13 @@ bool PathEndsWith(const Event& event, const std::string& suffix) {
     if (path == nullptr) {
         return false;
     }
-    const std::string np = NormalizePath(*path);
-    const std::string ns = NormalizePath(suffix);
-    if (np.size() < ns.size()) {
-        return false;
-    }
-    return EndsWithIgnoreCase(NormalizePath(*path), NormalizePath(suffix));
+    return EndsWithIgnoreCase(*path, suffix);
 }
 bool CommandLineContains(const Event& event, const std::string& needle) {
     const std::string* cmdline = FindField(event, "cmdline");
     if (cmdline == nullptr) {
         return false;
     }
-    return ContainsIgnoreCase(NormalizePath(*cmdline), NormalizePath(needle));
+    return ContainsIgnoreCase(*cmdline, needle);
 }
 }  // namespace nano_edr
