@@ -41,23 +41,21 @@ void Agent::HandleEvent(const Event& event) {
     if (!found) {
         counts_by_type_.emplace_back(event.type(), 1);
     }
-    std::vector<MatchRule*> fired_rules;
+    std::size_t fired = 0;
     for (MatchRule& rule : rules_) {
         if (rule.Check(event)) {
-            fired_rules.push_back(&rule);
+            if (fired == 0 && !quiet_) {
+                PrintContext();
+            }
+            std::print("[DETECT] {}  {}  ts={} pid={}\n",
+                       SeverityName(rule.severity()),
+                       rule.id(),
+                       event.raw_ts(),
+                       event.pid());
+            ++fired;
         }
     }
-    if (!fired_rules.empty() && !quiet_) {
-        PrintContext();
-    }
-    for (MatchRule* rule : fired_rules){
-        std::print("[DETECT] {}  {}  ts={} pid={}\n",
-                   SeverityName(rule->severity()),
-                   rule->id(),
-                   event.raw_ts(),
-                   event.pid());
-    }
-    detections_ += fired_rules.size();
+    detections_ += fired;
     const EventNode* old_tail = window_.back();
     window_.PushBack(event);
     prev_ = (window_.size() >= 2) ? old_tail : nullptr;
