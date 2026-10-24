@@ -3,10 +3,11 @@
 #include <print>
 #include <stdexcept>
 #include <string>
+#include <memory>
 
 #include "agent.h"
-#include "file_source.h"
-#include "os_source.h"
+#include "sources.h"
+#include "event_source.h"
 using namespace nano_edr;
 int main(int argc, char** argv) {
     try {
@@ -49,13 +50,13 @@ int main(int argc, char** argv) {
             return 2;
         }
         Agent agent(window_size, quiet);
+        std::unique_ptr<IEventSource> source; 
         if (use_file) {
-            FileSource source(path);
-            source.Run(&agent);
+            source = std::make_unique<FileSource>(path);
         } else {
-            OsSource source(path);
-            source.Run(&agent);
+            source = std::make_unique<OsSource>(path);
         }
+        source->Run(&agent);
         agent.PrintSummary();
         return 0;
     } catch (const std::exception& e) {
