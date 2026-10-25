@@ -1,17 +1,15 @@
 #include "agent.h"
 
-#include <cstddef>
-#include <exception>
+#include <vector>
 #include <print>
 #include <string>
 #include <utility>
 
 #include "agent_rules.h"
-#include "parse.h"
 #include "rules.h"
 namespace nano_edr {
 Agent::Agent(std::size_t window_size, bool quiet)
-    : window_(window_size), rules_(BuildAgentRules()), quiet_(quiet) {}
+    : window_(window_size), quiet_(quiet) {RegisterAgentRules(&engine_);}
 
 void Agent::PrintContext() const {
     if (prev_ != nullptr) {
@@ -41,29 +39,27 @@ void Agent::HandleEvent(const Event& event) {
     if (!found) {
         counts_by_type_.emplace_back(event.type(), 1);
     }
-    std::size_t fired = 0;
-    for (MatchRule& rule : rules_) {
-        if (rule.Check(event)) {
-            if (fired == 0 && !quiet_) {
-                PrintContext();
-            }
-            std::print("[DETECT] {}  {}  ts={} pid={}\n",
-                       SeverityName(rule.severity()),
-                       rule.id(),
-                       event.raw_ts(),
-                       event.pid());
-            ++fired;
-        }
+    std::vector<const IRule*> fired;
+    engine_.ProcessEvent(event, &fired);
+    if (!fired.empty() && !quiet_) {
+        PrintContext();
     }
-    detections_ += fired;
+    for (const IRule* rule : fired) {
+        std::print("[DETECT] {}  {}  ts={} pid={}\n", SeverityName(rule->severity()), rule->id(), event.raw_ts(), event.pid());
+    }
+    detections_ += fired.size();
     const EventNode* old_tail = window_.back();
     window_.PushBack(event);
     prev_ = (window_.size() >= 2) ? old_tail : nullptr;
 }
-void Agent::HandleSkipped(const std::string& reason) {
+void Agent::OnSkipped() {
     ++skipped_;
-    std::print(stderr, "пропущено событие: {}\n", reason);
 }
+void Agent::OnBroken() {
+    ++broken_;
+    std::print(stderr, "пропущено событие: битая строка\n");
+}
+void Agent::OnTick() {}
 void Agent::PrintSummary() const {
     if (quiet_) {
         return;
@@ -74,36 +70,10 @@ void Agent::PrintSummary() const {
     }
     std::print("детектов: {}\n", detections_);
     std::print("пропущено: {}\n", skipped_);
+    std::print("битых: {}\n", broken_);
     std::print("правила, детектов:\n");
-    for (const MatchRule& rule : rules_) {
-        std::print("  {}  {}\n", rule.id(), rule.hits());
-    }
-}
-void Agent::Trampoline(const os_event* ev, void* ctx) noexcept {
-    auto* self = static_cast<Agent*>(ctx);
-    if (self == nullptr || ev == nullptr) {
-        return;
-    }
-    try {
-        EventParts parts;
-        parts.ts = std::to_string(ev->ts);
-        parts.type = ev->type ? ev->type : "";
-        if (ev->pid != 0) {
-            parts.pid = std::to_string(ev->pid);
-        }
-        for (std::size_t i = 0; i < ev->field_count; ++i) {
-            const os_kv& kv = ev->fields[i];
-            parts.fields.push_back(Field{
-                kv.key ?kv.key : "",
-                kv.value ? kv.value : ""
-            });
-        }
-        Event event(parts);
-        self->HandleEvent(event);
-    } catch (const std::exception& e) {
-        self->HandleSkipped(e.what());
-    } catch (...) {
-        self->HandleSkipped("неизвестная ошибка");
+    for (std::size_t i = 0; i < engine_.size(); ++i){
+        std::print("  {}  {}\n", engine_.rule(i).id(), engine_.rule(i).hits());
     }
 }
 }  // namespace nano_edr
