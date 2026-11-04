@@ -1,7 +1,10 @@
 #include "agent_rules.h"
 #include "conditions.h"
+
 namespace nano_edr {
+
 void RegisterAgentRules(RuleEngine* engine) {
+
     {
         auto rule = std::make_unique<MatchRule>("script_host_from_temp", Severity::kHigh);
         auto all = std::make_unique<AllOf>();
@@ -92,6 +95,14 @@ void RegisterAgentRules(RuleEngine* engine) {
         images->Add(std::make_unique<FieldEndsWith>("image", "wscript.exe"));
         images->Add(std::make_unique<FieldEndsWith>("image", "cscript.exe"));
         first->Add(std::move(images));
+        auto temp = std::make_unique<AnyOf>();
+        temp->Add(std::make_unique<FieldContains>("cmdline", "\\appdata\\local\\temp\\"));
+        temp->Add(std::make_unique<FieldContains>("cmdline", "/appdata/local/temp/"));
+        temp->Add(std::make_unique<FieldContains>("cmdline", "\\windows\\temp\\"));
+        temp->Add(std::make_unique<FieldContains>("cmdline", "/windows/temp/"));
+        temp->Add(std::make_unique<FieldContains>("cmdline", "%temp%"));
+        temp->Add(std::make_unique<FieldContains>("cmdline", "%tmp%"));
+        first->Add(std::move(temp));
         rule->SetFirst(std::move(first));
         rule->SetSecond(std::make_unique<EventTypeIs>(std::vector<EventType>{EventType::kNetConnect}));
         rule->AddAction("kill_process");

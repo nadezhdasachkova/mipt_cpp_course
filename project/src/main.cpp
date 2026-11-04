@@ -4,7 +4,8 @@
 #include <stdexcept>
 #include <string>
 #include <memory>
-
+#include "event.h"
+#include "type_filter.h"
 #include "agent.h"
 #include "sources.h"
 #include "event_source.h"
@@ -13,6 +14,8 @@ int main(int argc, char** argv) {
     try {
         bool quiet = false;
         bool use_file = false;
+        bool has_only = false;
+        EventType only_type = EventType::kOther;
         std::string path;
         std::size_t window_size = 64;
         for (int i = 1; i < argc; ++i) {
@@ -21,6 +24,19 @@ int main(int argc, char** argv) {
                 quiet = true;
             } else if (arg == "--file") {
                 use_file = true;
+            } else if (arg == "--only") {
+                if (i + 1 >= argc) {
+                std::print(stderr, "нужен тип события после --only\n");
+                return 2;
+                }
+                std::string name = argv[++i];
+                EventType type = EventTypeFromString(name);
+                if (type == EventType::kOther) {
+                    std::print(stderr, "неизвестный тип события: {}\n", name);
+                    return 2;
+                }
+                has_only = true;
+                only_type = type;
             } else if (arg == "--window-size") {
                 if (i + 1 >= argc) {
                     std::print(stderr, "нужно число после --window-size\n");
@@ -56,8 +72,18 @@ int main(int argc, char** argv) {
         } else {
             source = std::make_unique<OsSource>(path);
         }
-        source->Run(&agent);
+        IEventHandler* handler = &agent;
+        std::unique_ptr<TypeFilter> filter;
+        if (has_only) {
+            filter = std::make_unique<TypeFilter>(&agent, only_type);
+            handler = filter.get();
+        }
+        source->Run(handler);
+
         agent.PrintSummary();
+        if (filter && !quiet) {
+            std::print("отфильтровано событий: {}\n", filter->filtered());
+        }
         return 0;
     } catch (const std::exception& e) {
         std::print(stderr, "ошибка: {}\n", e.what());
