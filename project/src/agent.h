@@ -4,16 +4,23 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <cstdint>
 
-
+#include "ring_buffer.h"
 #include "event.h"
 #include "event_list.h"
 #include "event_source.h"
 #include "rule_engine.h"
 namespace nano_edr {
+constexpr std::size_t kWindowSize = 256;
+struct WindowEntry {
+    std::string raw_ts;
+    std::string type;
+    std::string pid;
+};
 class Agent : public IEventHandler{
     public:
-        explicit Agent(std::size_t window_size, bool quiet);
+        explicit Agent(bool quiet);
         void HandleEvent(const Event& event) override;
         void OnSkipped() override;
         void OnBroken() override;
@@ -28,8 +35,7 @@ class Agent : public IEventHandler{
 
     private:
         void PrintContext() const;
-        EventList window_;
-        const EventNode* prev_ = nullptr;
+        RingBuffer<WindowEntry, kWindowSize> window_;
         std::size_t total_events_ = 0;
         std::size_t detections_ = 0;
         std::size_t skipped_ = 0;

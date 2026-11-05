@@ -17,7 +17,6 @@ int main(int argc, char** argv) {
         bool has_only = false;
         EventType only_type = EventType::kOther;
         std::string path;
-        std::size_t window_size = 64;
         for (int i = 1; i < argc; ++i) {
             std::string arg = argv[i];
             if (arg == "--quiet") {
@@ -37,19 +36,6 @@ int main(int argc, char** argv) {
                 }
                 has_only = true;
                 only_type = type;
-            } else if (arg == "--window-size") {
-                if (i + 1 >= argc) {
-                    std::print(stderr, "нужно число после --window-size\n");
-                    return 2;
-                }
-                std::string num = argv[++i];
-                std::size_t v = 0;
-                auto [ptr, ec] = std::from_chars(num.data(), num.data() + num.size(), v);
-                if (ec != std::errc{} || ptr != num.data() + num.size()) {
-                    std::print(stderr, "неверное значение --window-size: {}\n", num);
-                    return 2;
-                }
-                window_size = v;
             } else if (!arg.empty() && arg[0] == '-') {
                 std::print(stderr, "неизвестная опция: {}\n", arg);
                 return 2;
@@ -62,10 +48,10 @@ int main(int argc, char** argv) {
         }
         if (path.empty()) {
             std::print(stderr,
-                       "использование: nano-edr [--quiet] [--file] [--window-size N] <сценарий>\n");
+                       "использование: nano-edr [--quiet] [--file] <сценарий>\n");
             return 2;
         }
-        Agent agent(window_size, quiet);
+        Agent agent(quiet);
         std::unique_ptr<IEventSource> source; 
         if (use_file) {
             source = std::make_unique<FileSource>(path);

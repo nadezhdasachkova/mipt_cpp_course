@@ -8,22 +8,18 @@
 #include "agent_rules.h"
 #include "rules.h"
 namespace nano_edr {
-Agent::Agent(std::size_t window_size, bool quiet)
-    : window_(window_size), quiet_(quiet) {RegisterAgentRules(&engine_);}
+Agent::Agent(bool quiet)
+    : quiet_(quiet) {RegisterAgentRules(&engine_);}
 
 void Agent::PrintContext() const {
-    if (prev_ != nullptr) {
-        std::print("[CTX] -2: ts={} type={} pid={}\n",
-                   prev_->event.raw_ts(),
-                   prev_->event.type(),
-                   prev_->event.pid());
-    }
-    const EventNode* last = window_.back();
-    if (last != nullptr) {
-        std::print("[CTX] -1: ts={} type={} pid={}\n",
-                   last->event.raw_ts(),
-                   last->event.type(),
-                   last->event.pid());
+    uint64_t n = window_.size();
+    if (n >= 2) {
+        const WindowEntry& entry = window_[n - 2];
+        std::print("[CTX] -2: {} {} pid={}\n", entry.raw_ts, entry.type, entry.pid);
+    } 
+    if (n >= 1) {
+        const WindowEntry& entry = window_[n - 1];
+        std::print("[CTX] -1: {} {} pid={}\n", entry.raw_ts, entry.type, entry.pid);
     }
 }
 void Agent::HandleEvent(const Event& event) {
@@ -48,9 +44,11 @@ void Agent::HandleEvent(const Event& event) {
         std::print("[DETECT] {}  {}  ts={} pid={}\n", SeverityName(rule->severity()), rule->id(), event.raw_ts(), event.pid());
     }
     detections_ += fired.size();
-    const EventNode* old_tail = window_.back();
-    window_.PushBack(event);
-    prev_ = (window_.size() >= 2) ? old_tail : nullptr;
+    WindowEntry entry;
+    entry.raw_ts = event.raw_ts();
+    entry.type = event.type();
+    entry.pid = event.pid();
+    window_.PushBack(entry);
 }
 void Agent::OnSkipped() {
     ++skipped_;
@@ -71,6 +69,7 @@ void Agent::PrintSummary() const {
     std::print("детектов: {}\n", detections_);
     std::print("пропущено: {}\n", skipped_);
     std::print("битых: {}\n", broken_);
+        std::print("[STAT] в окне {} из {} мест\n", window_.size(), window_.capacity());
     std::print("правила, детектов:\n");
     for (std::size_t i = 0; i < engine_.size(); ++i){
         std::print("  {}  {}\n", engine_.rule(i).id(), engine_.rule(i).hits());

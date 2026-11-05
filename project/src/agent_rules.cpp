@@ -1,5 +1,7 @@
 #include "agent_rules.h"
 #include "conditions.h"
+#include "combinators.h"
+#include "make_rule.h"
 
 namespace nano_edr {
 
@@ -106,6 +108,15 @@ void RegisterAgentRules(RuleEngine* engine) {
         rule->SetFirst(std::move(first));
         rule->SetSecond(std::make_unique<EventTypeIs>(std::vector<EventType>{EventType::kNetConnect}));
         rule->AddAction("kill_process");
+        engine->AddRule(std::move(rule));
+    }
+    {
+        auto rule = MakeRule<ThresholdRule<128>>("ransomware_mass_write", Severity::kCritical, 20, 10000, "pid");
+        rule->SetCondition(MakeCondition(AllOfStatic(
+        EventTypeIs({EventType::kFileCreate, EventType::kFileWrite, EventType::kFileMove}),
+        AnyOfStatic(FieldContains("path", "\\documents\\"),FieldContains("path", "/documents/"),FieldContains("to", "\\documents\\"),FieldContains("to", "/documents/"),FieldContains("path", "\\desktop\\"),FieldContains("path", "/desktop/"),FieldContains("to", "\\desktop\\"),FieldContains("to", "/desktop/")))));
+        rule->AddAction("kill_process");
+        rule->AddAction("quarantine_file");
         engine->AddRule(std::move(rule));
     }
 }
