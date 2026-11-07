@@ -1,15 +1,17 @@
-#include <charconv>
 #include <cstdio>
+#include <memory>
 #include <print>
 #include <stdexcept>
 #include <string>
-#include <memory>
-#include "event.h"
-#include "type_filter.h"
+
 #include "agent.h"
-#include "sources.h"
+#include "event.h"
 #include "event_source.h"
+#include "sources.h"
+#include "type_filter.h"
+
 using namespace nano_edr;
+
 int main(int argc, char** argv) {
     try {
         bool quiet = false;
@@ -25,8 +27,8 @@ int main(int argc, char** argv) {
                 use_file = true;
             } else if (arg == "--only") {
                 if (i + 1 >= argc) {
-                std::print(stderr, "нужен тип события после --only\n");
-                return 2;
+                    std::print(stderr, "нужен тип события после --only\n");
+                    return 2;
                 }
                 std::string name = argv[++i];
                 EventType type = EventTypeFromString(name);
@@ -48,11 +50,12 @@ int main(int argc, char** argv) {
         }
         if (path.empty()) {
             std::print(stderr,
-                       "использование: nano-edr [--quiet] [--file] <сценарий>\n");
+                       "использование: nano-edr [--quiet] [--file] "
+                       "<сценарий>\n");
             return 2;
         }
         Agent agent(quiet);
-        std::unique_ptr<IEventSource> source; 
+        std::unique_ptr<IEventSource> source;
         if (use_file) {
             source = std::make_unique<FileSource>(path);
         } else {

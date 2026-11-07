@@ -1,6 +1,4 @@
-// Заготовка фабрики правил. Занятие 3.1.
-//
-// Скопируйте файл в `src/` и допишите тело. С этого момента он ваш.
+// Фабрика правил. Занятие 3.1.
 //
 // Смысл фабрики не в экономии букв, а в одном месте, где правило создаётся:
 // если завтра правила начнут регистрироваться в реестре или получать общий
@@ -24,8 +22,8 @@ namespace nano_edr {
 template <typename Rule, typename... Args>
 std::unique_ptr<Rule> MakeRule(const std::string& id, Severity severity,
                                Args... args) {
-                                return std::make_unique<Rule>(id, severity, args...);
-                               }
+    return std::make_unique<Rule>(id, severity, args...);
+}
 
 }  // namespace nano_edr
 

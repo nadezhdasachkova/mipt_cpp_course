@@ -28,8 +28,8 @@
 #ifndef NANO_EDR_RING_BUFFER_H
 #define NANO_EDR_RING_BUFFER_H
 
-#include <cstddef>
 #include <array>
+#include <cstddef>
 
 namespace nano_edr {
 template <typename T, std::size_t N>
@@ -42,8 +42,9 @@ class RingBuffer {
     // намеренно.
     class Iterator {
      public:
+        Iterator() = default;
         Iterator(const RingBuffer* buffer, std::size_t index)
-        : buffer_(buffer), index_(index) {}
+            : buffer_(buffer), index_(index) {}
         const T& operator*() const {
             return (*buffer_)[index_];
         }
@@ -54,9 +55,10 @@ class RingBuffer {
         bool operator!=(const Iterator& other) const {
             return index_ != other.index_;
         }
+
      private:
-        const RingBuffer* buffer_;
-        std::size_t index_;
+        const RingBuffer* buffer_ = nullptr;
+        std::size_t index_ = 0;
     };
 
     // Дописывает элемент. Если буфер полон, самый старый затирается — окно,
@@ -65,7 +67,7 @@ class RingBuffer {
         if (size_ < N) {
             data_[(head_ + size_) % N] = value;
             size_++;
-        } else  {
+        } else {
             data_[head_] = value;
             head_ = (head_ + 1) % N;
         }
