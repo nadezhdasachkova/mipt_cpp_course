@@ -11,7 +11,16 @@
 
 namespace nano_edr {
 namespace {
-
+std::unique_ptr<ICondition> MakeTempCmdlineCondition() {
+    auto temp = std::make_unique<AnyOf>();
+    temp->Add(std::make_unique<FieldContains>("cmdline", "\\appdata\\local\\temp\\"));
+    temp->Add(std::make_unique<FieldContains>("cmdline", "/appdata/local/temp/"));
+    temp->Add(std::make_unique<FieldContains>("cmdline", "\\windows\\temp\\"));
+    temp->Add(std::make_unique<FieldContains>("cmdline", "/windows/temp/"));
+    temp->Add(std::make_unique<FieldContains>("cmdline", "%temp%"));
+    temp->Add(std::make_unique<FieldContains>("cmdline", "%tmp%"));
+    return temp;
+}
 std::unique_ptr<MatchRule> MakeScriptHostFromTemp() {
     auto rule = std::make_unique<MatchRule>("script_host_from_temp", Severity::kHigh);
     auto all = std::make_unique<AllOf>();
@@ -20,18 +29,12 @@ std::unique_ptr<MatchRule> MakeScriptHostFromTemp() {
     images->Add(std::make_unique<FieldEndsWith>("image", "wscript.exe"));
     images->Add(std::make_unique<FieldEndsWith>("image", "cscript.exe"));
     all->Add(std::move(images));
-    auto paths = std::make_unique<AnyOf>();
-    paths->Add(std::make_unique<FieldContains>("cmdline", "\\appdata\\local\\temp\\"));
-    paths->Add(std::make_unique<FieldContains>("cmdline", "/appdata/local/temp/"));
-    paths->Add(std::make_unique<FieldContains>("cmdline", "\\windows\\temp\\"));
-    paths->Add(std::make_unique<FieldContains>("cmdline", "/windows/temp/"));
-    paths->Add(std::make_unique<FieldContains>("cmdline", "%temp%"));
-    paths->Add(std::make_unique<FieldContains>("cmdline", "%tmp%"));
-    all->Add(std::move(paths));
+    all->Add(MakeTempCmdlineCondition());
     rule->AddCondition(std::move(all));
     rule->AddAction("kill_process");
     return rule;
 }
+
 std::unique_ptr<MatchRule> MakeLolbinDownload() {
     auto rule = std::make_unique<MatchRule>("lolbin_download", Severity::kHigh);
     auto all = std::make_unique<AllOf>();
@@ -102,14 +105,7 @@ std::unique_ptr<SequenceRule> MakeScriptHostBeacon() {
     images->Add(std::make_unique<FieldEndsWith>("image", "wscript.exe"));
     images->Add(std::make_unique<FieldEndsWith>("image", "cscript.exe"));
     first->Add(std::move(images));
-    auto temp = std::make_unique<AnyOf>();
-    temp->Add(std::make_unique<FieldContains>("cmdline", "\\appdata\\local\\temp\\"));
-    temp->Add(std::make_unique<FieldContains>("cmdline", "/appdata/local/temp/"));
-    temp->Add(std::make_unique<FieldContains>("cmdline", "\\windows\\temp\\"));
-    temp->Add(std::make_unique<FieldContains>("cmdline", "/windows/temp/"));
-    temp->Add(std::make_unique<FieldContains>("cmdline", "%temp%"));
-    temp->Add(std::make_unique<FieldContains>("cmdline", "%tmp%"));
-    first->Add(std::move(temp));
+    first->Add(MakeTempCmdlineCondition());
     rule->SetFirst(std::move(first));
     rule->SetSecond(std::make_unique<EventTypeIs>(std::vector<EventType>{EventType::kNetConnect}));
     rule->AddAction("kill_process");
@@ -132,7 +128,7 @@ std::unique_ptr<ThresholdRule<128>> MakeRansomwareMassWrite() {
     rule->AddAction("quarantine_file");
     return rule;
 }
-}  // namespace
+}  
 RuleEngine BuildAgentRules() {
     RuleEngine engine;
     engine.AddRule(MakeScriptHostFromTemp());
@@ -144,4 +140,4 @@ RuleEngine BuildAgentRules() {
     engine.AddRule(MakeRansomwareMassWrite());
     return engine;
 }
-}  // namespace nano_edr
+}  // namespace nano_edr 
