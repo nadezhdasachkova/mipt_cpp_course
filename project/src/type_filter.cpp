@@ -1,12 +1,13 @@
 #include "type_filter.h"
+
 #include <stdexcept>
 namespace nano_edr {
 TypeFilter::TypeFilter(IEventHandler* next, EventType type)
     : next_(next), type_(type) {
-        if (next_ == nullptr) {
-            throw std::invalid_argument("TypeFilter: next is null");
-        }
+    if (next_ == nullptr) {
+        throw std::invalid_argument("TypeFilter: next is null");
     }
+}
 void TypeFilter::HandleEvent(const Event& event) {
     if (event.event_type() == type_) {
         next_->HandleEvent(event);
@@ -23,4 +24,4 @@ void TypeFilter::OnBroken() {
 void TypeFilter::OnTick() {
     next_->OnTick();
 }
-}
+}  // namespace nano_edr

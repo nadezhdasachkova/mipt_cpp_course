@@ -30,22 +30,22 @@ EventType EventTypeFromString(const std::string& type) {
 }
 const char* EventTypeName(EventType type) {
     switch (type) {
-        case EventType::kProcessStart: 
+        case EventType::kProcessStart:
             return "process_start";
-        case EventType::kProcessEnd:   
+        case EventType::kProcessEnd:
             return "process_end";
-        case EventType::kFileCreate:   
+        case EventType::kFileCreate:
             return "file_create";
-        case EventType::kFileWrite:    
+        case EventType::kFileWrite:
             return "file_write";
-        case EventType::kFileDelete:  
-             return "file_delete";
-        case EventType::kFileMove:    
-             return "file_move";
-        case EventType::kNetConnect:  
-             return "net_connect";
-        case EventType::kOther:     
-               return "other";
+        case EventType::kFileDelete:
+            return "file_delete";
+        case EventType::kFileMove:
+            return "file_move";
+        case EventType::kNetConnect:
+            return "net_connect";
+        case EventType::kOther:
+            return "other";
     }
     return "other";
 }
@@ -66,19 +66,25 @@ Event::Event(const EventParts& parts) {
     ts_ = Timestamp{ms};
     raw_ts_ = parts.ts;
     type_ = parts.type;
-    event_type_ = EventTypeFromString(parts.type); // Новое поле
+    event_type_ = EventTypeFromString(parts.type);  // Новое поле
     pid_ = parts.pid;
     fields_ = parts.fields;
 }
 std::string ToString(const Event& event) {
     std::string out;
-    out += "ts="; out += event.raw_ts();
-    out += " type="; out += event.type();
+    out += "ts=";
+    out += event.raw_ts();
+    out += " type=";
+    out += event.type();
     if (!event.pid().empty()) {
-        out += " pid="; out += event.pid();
+        out += " pid=";
+        out += event.pid();
     }
     for (const Field& f : event.fields()) {
-        out += ' '; out += f.key; out += '='; out += f.value;
+        out += ' ';
+        out += f.key;
+        out += '=';
+        out += f.value;
     }
     return out;
 }
