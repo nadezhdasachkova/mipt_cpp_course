@@ -1,38 +1,43 @@
-#include <charconv>
 #include <cstdio>
+#include <memory>
 #include <print>
 #include <stdexcept>
 #include <string>
 
 #include "agent.h"
-#include "file_source.h"
-#include "os_source.h"
+#include "event.h"
+#include "event_source.h"
+#include "sources.h"
+#include "type_filter.h"
+
 using namespace nano_edr;
+
 int main(int argc, char** argv) {
     try {
         bool quiet = false;
         bool use_file = false;
+        bool has_only = false;
+        EventType only_type = EventType::kOther;
         std::string path;
-        std::size_t window_size = 64;
         for (int i = 1; i < argc; ++i) {
             std::string arg = argv[i];
             if (arg == "--quiet") {
                 quiet = true;
             } else if (arg == "--file") {
                 use_file = true;
-            } else if (arg == "--window-size") {
+            } else if (arg == "--only") {
                 if (i + 1 >= argc) {
-                    std::print(stderr, "нужно число после --window-size\n");
+                    std::print(stderr, "нужен тип события после --only\n");
                     return 2;
                 }
-                std::string num = argv[++i];
-                std::size_t v = 0;
-                auto [ptr, ec] = std::from_chars(num.data(), num.data() + num.size(), v);
-                if (ec != std::errc{} || ptr != num.data() + num.size()) {
-                    std::print(stderr, "неверное значение --window-size: {}\n", num);
+                std::string name = argv[++i];
+                EventType type = EventTypeFromString(name);
+                if (type == EventType::kOther) {
+                    std::print(stderr, "неизвестный тип события: {}\n", name);
                     return 2;
                 }
-                window_size = v;
+                has_only = true;
+                only_type = type;
             } else if (!arg.empty() && arg[0] == '-') {
                 std::print(stderr, "неизвестная опция: {}\n", arg);
                 return 2;
@@ -45,18 +50,29 @@ int main(int argc, char** argv) {
         }
         if (path.empty()) {
             std::print(stderr,
-                       "использование: nano-edr [--quiet] [--file] [--window-size N] <сценарий>\n");
+                       "использование: nano-edr [--quiet] [--file] "
+                       "<сценарий>\n");
             return 2;
         }
-        Agent agent(window_size, quiet);
+        Agent agent(quiet);
+        std::unique_ptr<IEventSource> source;
         if (use_file) {
-            FileSource source(path);
-            source.Run(&agent);
+            source = std::make_unique<FileSource>(path);
         } else {
-            OsSource source(path);
-            source.Run(&agent);
+            source = std::make_unique<OsSource>(path);
         }
+        IEventHandler* handler = &agent;
+        std::unique_ptr<TypeFilter> filter;
+        if (has_only) {
+            filter = std::make_unique<TypeFilter>(&agent, only_type);
+            handler = filter.get();
+        }
+        source->Run(handler);
+
         agent.PrintSummary();
+        if (filter && !quiet) {
+            std::print("отфильтровано событий: {}\n", filter->filtered());
+        }
         return 0;
     } catch (const std::exception& e) {
         std::print(stderr, "ошибка: {}\n", e.what());
