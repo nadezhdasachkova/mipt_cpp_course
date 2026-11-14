@@ -5,5 +5,5 @@ namespace nano_edr {
 bool EqualsIgnoreCase(const std::string& a, const std::string& b);
 bool ContainsIgnoreCase(const std::string& haystack, const std::string& needle);
 bool EndsWithIgnoreCase(const std::string& str, const std::string& suffix);
-}
+}  // namespace nano_edr
 #endif
