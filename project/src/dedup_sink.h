@@ -32,7 +32,6 @@ class DedupSink {
     DedupSink(AlertSink inner, uint64_t period_ms, std::size_t* suppressed);
 
     void operator()(const Detection& detection);
-
  private:
     struct SeenRecord {
         std::string rule;
@@ -40,7 +39,7 @@ class DedupSink {
         uint64_t first_ts;
     };
     AlertSink inner_;
-    uint64_t window_ms_;
+    uint64_t period_ms_;
     std::size_t* suppressed_;
     std::vector<SeenRecord> seen_;
 };
