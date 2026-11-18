@@ -19,36 +19,35 @@ struct Options {
     bool use_file = false;
     std::string path;
     std::string out;
-    std::size_t window_size = 64;
 };
 int main(int argc, char** argv) {
     try {
         Options opts;
         for (int i = 1; i < argc; ++i) {
             std::string arg = argv[i];
-            if (arg == "--quiet")
+            if (arg == "--quiet") {
                 opts.quiet = true;
-            else if (arg == "--file")
+            } else if (arg == "--file") {
                 opts.use_file = true;
-            else if (arg == "--window-size") {
-                if (i + 1 >= argc) return 2;
-                std::string num = argv[++i];
-                auto [ptr, ec] = std::from_chars(num.data(), num.data() + num.size(), opts.window_size);
-                if (ec != std::errc{} || ptr != num.data() + num.size()) return 2;
             } else if (arg == "--out") {
                 if (i + 1 >= argc) {
                     std::print(stderr, "нужно имя файла после --out\n");
                     return 2;
                 }
                 opts.out = argv[++i];
-            } else if (!arg.empty() && arg[0] == '-')
+            } else if (!arg.empty() && arg[0] == '-') {
+                std::print(stderr, "неизвестная опция : {}\n", arg);
                 return 2;
-            else if (!opts.path.empty())
+            } else if (!opts.path.empty()) {
+                std::print(stderr, "путь указан дважды: {}\n", arg);
                 return 2;
-            else
+            } else
                 opts.path = arg;
         }
-        if (opts.path.empty()) return 2;
+        if (opts.path.empty()) {
+            std::print(stderr, "использование: nano-edr [--quiet] [--file] [--out <файл>] <сценарий>\n");
+            return 2;
+        }
         EdrHandle edr(opts.path);
         const std::string text = edr.Config("dedup_period_ms", "10000");
         uint64_t dedup_period_ms = 0;

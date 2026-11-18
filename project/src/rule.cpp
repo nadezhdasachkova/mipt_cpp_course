@@ -25,15 +25,15 @@ void SequenceRule::SetFirst(std::unique_ptr<ICondition> cond) { first_ = std::mo
 void SequenceRule::SetSecond(std::unique_ptr<ICondition> cond) { second_ = std::move(cond); }
 bool SequenceRule::Linked(const Pending& first, const Event& second) const {
     if (child_of_prev_) {
-        if (!model_) return false;
-        if (first.pid == second.pid()) return false;  // не может быть сам себе предком
-        auto chain = model_->GetAncestorChain(second.pid());
-        for (const auto& pid : chain) {
-            if (pid == first.pid) return true;
+        if (!model_) {
+            return false;
         }
-        return false;
+        const ProcessRecord* p = model_->FindProcess(second.pid());
+        return p != nullptr && p->ppid == first.pid;
     }
-    if (same_pid_) return first.pid == second.pid();
+    if (same_pid_) {
+        return first.pid == second.pid();
+    }
     return true;
 }
 bool SequenceRule::Check(const Event& event) {

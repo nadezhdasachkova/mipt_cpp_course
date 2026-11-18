@@ -27,14 +27,13 @@ void Agent::PrintContextOnce() {
     }
     context_printed_ = true;
 
-    if (prev_ != nullptr) {
-        std::print("[CTX] -2: {} {} pid={}\n",
-                   prev_->event.raw_ts(), prev_->event.type(), prev_->event.pid());
+    if (window_.size() >= 2) {
+        const WindowEntry& prev = window_[window_.size() - 2];
+        std::print("[CTX] -2: {} {} pid={}\n", prev.ts.ms, prev.type, prev.pid);
     }
-    const EventNode* last = window_.back();
-    if (last != nullptr) {
-        std::print("[CTX] -1: {} {} pid={}\n",
-                   last->event.raw_ts(), last->event.type(), last->event.pid());
+    if (window_.size() >= 1) {
+        const WindowEntry& last = window_.back();
+        std::print("[CTX] -1: {} {} pid={}\n", last.ts.ms, last.type, last.pid);
     }
 }
 void Agent::HandleEvent(const Event& event) {
@@ -56,9 +55,7 @@ void Agent::HandleEvent(const Event& event) {
     engine_.ProcessEvent(event, &fired);
     detections_ += fired.size();
 
-    const EventNode* old_tail = window_.back();
-    window_.PushBack(event);
-    prev_ = (window_.size() >= 2) ? old_tail : nullptr;
+    window_.PushBack({event.ts(), event.type(), event.pid()});
 }
 void Agent::OnSkipped() { ++skipped_; }
 void Agent::OnBroken() {

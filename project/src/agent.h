@@ -9,15 +9,22 @@
 #include "alert_sink.h"
 #include "entity_model.h"
 #include "event.h"
-#include "event_list.h"
+#include "ring_buffer.h"
 #include "event_source.h"
 #include "rule_engine.h"
 
+
 namespace nano_edr {
+struct WindowEntry {
+   Timestamp ts;
+   std::string type;
+   std::string pid;
+};
 class Agent : public IEventHandler {
  public:
+    static constexpr std::size_t kWindowCapacity = 256;
     Agent(bool quiet, uint64_t dedup_period_ms);
-    void Subscribe(AlertSink sink);  // Новое!
+    void Subscribe(AlertSink sink);  
     void HandleEvent(const Event& event) override;
     void OnSkipped() override;
     void OnBroken() override;
@@ -26,8 +33,7 @@ class Agent : public IEventHandler {
 
  private:
     void PrintContextOnce();
-    EventList window_;
-    const EventNode* prev_ = nullptr;
+    RingBuffer<WindowEntry, kWindowCapacity> window_;
     std::size_t total_events_ = 0;
     std::size_t detections_ = 0;
     std::size_t skipped_ = 0;
