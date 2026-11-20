@@ -39,4 +39,4 @@ void EventList::Clear() {
     tail_ = nullptr;
     size_ = 0;
 }
-} 
+}  // namespace nano_edr

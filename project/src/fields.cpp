@@ -3,6 +3,7 @@
 #include <cctype>
 #include <charconv>
 #include <stdexcept>
+
 #include "text.h"
 namespace nano_edr {
 const std::string* FindField(const Event& event, const std::string& key) {
