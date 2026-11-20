@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
                 }
                 opts.out = argv[++i];
             } else if (!arg.empty() && arg[0] == '-') {
-                std::print(stderr, "неизвестная опция : {}\n", arg);
+                std::print(stderr, "неизвестная опция: {}\n", arg);
                 return 2;
             } else if (!opts.path.empty()) {
                 std::print(stderr, "путь указан дважды: {}\n", arg);

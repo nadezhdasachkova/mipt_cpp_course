@@ -154,7 +154,7 @@ std::unique_ptr<LambdaRule> MakeSpawnedFromDroppedFile(const EntityModel* model)
         [model](const Event& event) {
             if (event.event_type() != EventType::kProcessStart) return false;
             const FileRecord* source = model->FindSpawnSource(event.pid());
-            return source != nullptr && source->writer_pid != event.pid();
+            return source != nullptr && !source->writer_pid.empty() && source->writer_pid != event.pid();
         });
     rule->AddAction("kill_process");
     rule->AddAction("quarantine_file");
