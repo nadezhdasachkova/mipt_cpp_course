@@ -2,6 +2,7 @@
 #define NANO_EDR_SOURCES_H
 #include <string>
 #include "event_source.h"
+#include "os_handle.h"
 namespace nano_edr {
 class FileSource : public IEventSource {
     public:
@@ -12,10 +13,12 @@ class FileSource : public IEventSource {
 };
 class OsSource : public IEventSource {
     public:
+        OsHandle* os() override { return &handle_;}
         explicit OsSource(std::string scenario_path);
         void Run(IEventHandler* handler) override;
     private:
         std::string scenario_path_;
+        OsHandle handle_;
 };
 }
 #endif

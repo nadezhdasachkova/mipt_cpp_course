@@ -32,6 +32,8 @@ std::unique_ptr<MatchRule> MakeScriptHostFromTemp() {
     all->Add(MakeTempCmdlineCondition());
     rule->AddCondition(std::move(all));
     rule->AddAction("kill_process");
+    rule->AddAction("quarantine_source");
+    rule->AddAction("delete_dropped");
     return rule;
 }
 
@@ -82,7 +84,7 @@ std::unique_ptr<MatchRule> MakeAutostartWrite() {
     paths->Add(std::make_unique<FieldContains>("to", "/start menu/programs/startup/"));
     all->Add(std::move(paths));
     rule->AddCondition(std::move(all));
-    rule->AddAction("quarantine_file");
+    rule->AddAction("delete_evidence");
     return rule;
 }
 std::unique_ptr<MatchRule> MakeRansomExtension() {
@@ -94,7 +96,8 @@ std::unique_ptr<MatchRule> MakeRansomExtension() {
     paths->Add(std::make_unique<FieldEndsWith>("to", ".locked"));
     all->Add(std::move(paths));
     rule->AddCondition(std::move(all));
-    rule->AddAction("quarantine_file");
+    rule->AddAction("kill_process");
+    rule->AddAction("quarantine_image");
     return rule;
 }
 std::unique_ptr<SequenceRule> MakeScriptHostBeacon() {
@@ -125,11 +128,44 @@ std::unique_ptr<ThresholdRule<128>> MakeRansomwareMassWrite() {
                                 FieldContains("to", "\\desktop\\"),
                                 FieldContains("to", "/desktop/")))));
     rule->AddAction("kill_process");
-    rule->AddAction("quarantine_file");
+    rule->AddAction("quarantine_image");
+    return rule;
+}
+std::unique_ptr<SequenceRule> MakeShellSpawnsScriptHost(const EntityModel* model) {
+    auto rule = std::make_unique<SequenceRule>("shell_spawns_script_host", Severity::kHigh, 30000);
+    auto first = std::make_unique<AllOf>();
+    first->Add(std::make_unique<EventTypeIs>(std::vector<EventType>{EventType::kProcessStart}));
+    auto sh_images = std::make_unique<AnyOf>();
+    sh_images->Add(std::make_unique<FieldEndsWith>("image", "cmd.exe"));
+    sh_images->Add(std::make_unique<FieldEndsWith>("image", "powershell.exe"));
+    sh_images->Add(std::make_unique<FieldEndsWith>("image", "pwsh.exe"));
+    first->Add(std::move(sh_images));
+    rule->SetFirst(std::move(first));
+    auto second = std::make_unique<AllOf>();
+    second->Add(std::make_unique<EventTypeIs>(std::vector<EventType>{EventType::kProcessStart}));
+    auto host_images = std::make_unique<AnyOf>();
+    host_images->Add(std::make_unique<FieldEndsWith>("image", "wscript.exe"));
+    host_images->Add(std::make_unique<FieldEndsWith>("image", "cscript.exe"));
+    second->Add(std::move(host_images));
+    rule->SetSecond(std::move(second));
+    rule->set_child_of_prev(true);
+    rule->SetModel(model);
+    rule->AddAction("kill_process");
+    return rule;
+}
+std::unique_ptr<LambdaRule> MakeSpawnedFromDroppedFile(const EntityModel* model) {
+    auto rule = MakeRule<LambdaRule>("spawned_from_dropped_file", Severity::kHigh,[model](const Event& event) {
+            if (event.event_type() != EventType::kProcessStart) return false;
+            const FileRecord* source = model->FindSpawnSource(event.pid());
+            return source != nullptr && source->writer_pid != event.pid();
+        });
+    rule->AddAction("kill_process");
+    rule->AddAction("quarantine_source");
+    rule->AddAction("delete_dropped");
     return rule;
 }
 }  
-RuleEngine BuildAgentRules() {
+RuleEngine BuildAgentRules(const EntityModel* model) {
     RuleEngine engine;
     engine.AddRule(MakeScriptHostFromTemp());
     engine.AddRule(MakeLolbinDownload());
@@ -138,6 +174,8 @@ RuleEngine BuildAgentRules() {
     engine.AddRule(MakeRansomExtension());
     engine.AddRule(MakeScriptHostBeacon());
     engine.AddRule(MakeRansomwareMassWrite());
+    engine.AddRule(MakeShellSpawnsScriptHost(model));
+    engine.AddRule(MakeSpawnedFromDroppedFile(model));
     return engine;
 }
 }  // namespace nano_edr 
