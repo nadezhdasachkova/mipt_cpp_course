@@ -1,5 +1,5 @@
 #include "rule_engine.h"
-
+#include "copy_stats.h"
 #include <utility>
 
 namespace nano_edr {
@@ -18,6 +18,9 @@ Detection RuleEngine::MakeDetection(const IRule& rule, const Event& event) const
     det.actions = rule.actions();
     if (model_) {
         det.chain = model_->DescribeChain(event.pid());
+        det.evidence.push_back(std::make_unique<Event>(event));
+        ++copy_stats().evidence_copied;
+        return det;
     }
     return det;
 }

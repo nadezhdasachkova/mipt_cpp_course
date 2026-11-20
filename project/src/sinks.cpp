@@ -30,9 +30,11 @@ void FileSink::operator()(const Detection& detection) {
 // --- CountingSink ----------------------------------------------------------
 
 void CountingSink::operator()(const Detection& detection) const {
-    if(counter_) {
-        ++counter_->total;
-        counter_->seen.push_back(detection);
+    if (counter_) {
+        counter_->total++;
+        counter_->seen.push_back(SeenAlert{
+            detection.rule, detection.severity, detection.ts, detection.pid, detection.actions
+        });
     }
 }
 

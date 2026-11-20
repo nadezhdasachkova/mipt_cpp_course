@@ -30,14 +30,15 @@ void FileSource::Run(IEventHandler* handler) {
             continue;
         }
         try {
-            Event event(parts);
+            Event event(std::move(parts));
             handler->HandleEvent(event);
         } catch (const std::exception&) {
             handler->OnBroken();
         }
     }
 }
-OsSource::OsSource(std::string scenario_path) : scenario_path_(std::move(scenario_path)) {}
+OsSource::OsSource(std::string scenario_path) 
+    : scenario_path_(std::move(scenario_path)), handle_(scenario_path_) {}
 static void Trampoline(const os_event* ev, void* ctx) noexcept {
     auto* handler = static_cast<IEventHandler*>(ctx);
     try {
@@ -51,7 +52,7 @@ static void Trampoline(const os_event* ev, void* ctx) noexcept {
             const os_kv& kv = ev->fields[i];
             parts.fields.push_back(Field{kv.key ? kv.key : "", kv.value ? kv.value : ""});
         }
-        Event event(parts);
+        Event event(std::move(parts));
         handler->HandleEvent(event);
     } catch (...) {
         handler->OnBroken();
@@ -61,11 +62,10 @@ void OsSource::Run(IEventHandler* handler) {
     if (!handler) {
         throw std::invalid_argument("handler is null");
     }
-    OsHandle handle(scenario_path_);
-    handle.Subscribe(Trampoline, handler);
-    handle.Start();
+    handle_.Subscribe(Trampoline, handler);
+    handle_.Start();
     os_status status;
-    while ((status = handle.Wait(100)) == OS_TIMEOUT) {
+    while ((status = handle_.Wait(100)) == OS_TIMEOUT) {
         handler->OnTick();
     }
     if (status != OS_OK && status != OS_STOPPED) {

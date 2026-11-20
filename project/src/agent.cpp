@@ -15,6 +15,13 @@ Agent::Agent(bool quiet, uint64_t dedup_period_ms)
     engine_ = BuildAgentRules(&model_);
     engine_.SetModel(&model_);
 }
+void Agent::EnableResponse(OsHandle* os, bool dry_run, const std::string& quarantine_dir) {
+    planner_ = std::make_unique<ResponsePlanner>(&model_, quarantine_dir);
+    responder_ = std::make_unique<Responder>(os, dry_run);
+    engine_.Subscribe([this](const Detection& detection) {
+        if (responder_) responder_->Execute(planner_->Plan(detection));
+    });
+}
 void Agent::Subscribe(AlertSink sink) {
     FanOutSink all;
     all.Add([this](const Detection&) { PrintContextOnce(); });
@@ -46,9 +53,15 @@ void Agent::HandleEvent(const Event& event) {
             break;
         }
     }
-    if (!found) counts_by_type_.emplace_back(event.type(), 1);
+    if (!found) {
+        counts_by_type_.emplace_back(event.type(), 1);
+    }
 
     model_.Observe(event);
+    if (responder_ && responder_->Recognize(event)) {
+        window_.PushBack({event.ts(), event.type(), event.pid()});
+        return; 
+    }
     context_printed_ = false;
 
     std::vector<const IRule*> fired;
@@ -68,6 +81,13 @@ void Agent::PrintSummary() const {
     std::print("событий: {}\n", total_events_);
     for (const auto& [type, count] : counts_by_type_) {
         std::print(" {}: {}\n", type, count);
+    }
+    if (responder_) {
+        const auto& s = responder_->stats();
+        std::print("[STAT] действий запланировано {}, повторов отброшено {}\n", s.planned, s.skipped_repeat);
+        std::print("[STAT] завершено процессов {}, изолировано файлов {}, удалено файлов {}\n", s.killed, s.quarantined, s.deleted);
+        if (s.own_events > 0)
+        std::print("[STAT] своих событий {}\n", s.own_events);
     }
     std::print("детектов: {}\n", detections_);
     std::print("пропущено: {}\n", skipped_);

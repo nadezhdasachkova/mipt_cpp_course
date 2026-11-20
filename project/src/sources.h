@@ -3,6 +3,7 @@
 #include <string>
 
 #include "event_source.h"
+#include "os_handle.h"
 namespace nano_edr {
 class FileSource : public IEventSource {
  public:
@@ -13,12 +14,13 @@ class FileSource : public IEventSource {
     std::string path_;
 };
 class OsSource : public IEventSource {
- public:
-    explicit OsSource(std::string scenario_path);
-    void Run(IEventHandler* handler) override;
-
- private:
-    std::string scenario_path_;
+    public:
+        OsHandle* os() override { return &handle_;}
+        explicit OsSource(std::string scenario_path);
+        void Run(IEventHandler* handler) override;
+    private:
+        std::string scenario_path_;
+        OsHandle handle_;
 };
 }  // namespace nano_edr
 #endif

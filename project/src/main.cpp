@@ -17,6 +17,8 @@ using namespace nano_edr;
 struct Options {
     bool quiet = false;
     bool use_file = false;
+    bool dry_run = false;
+    bool copies = false;
     std::string path;
     std::string out;
 };
@@ -29,6 +31,10 @@ int main(int argc, char** argv) {
                 opts.quiet = true;
             } else if (arg == "--file") {
                 opts.use_file = true;
+            } else if (arg == "--dry-run") {
+                opts.dry_run = true;
+            } else if (arg == "--copies") {
+                opts.copies = true;
             } else if (arg == "--out") {
                 if (i + 1 >= argc) {
                     std::print(stderr, "нужно имя файла после --out\n");
@@ -36,7 +42,7 @@ int main(int argc, char** argv) {
                 }
                 opts.out = argv[++i];
             } else if (!arg.empty() && arg[0] == '-') {
-                std::print(stderr, "неизвестная опция: {}\n", arg);
+                std::print(stderr, "неизвестная опция : {}\n", arg);
                 return 2;
             } else if (!opts.path.empty()) {
                 std::print(stderr, "путь указан дважды: {}\n", arg);
@@ -55,24 +61,31 @@ int main(int argc, char** argv) {
             std::print(stderr, "[WARN] dedup_period_ms не разбирается: {}\n", text);
             dedup_period_ms = 10000;
         }
-        Agent agent(opts.quiet, dedup_period_ms);
-        FanOutSink targets;
-        targets.Add(ConsoleSink());
-        if (!opts.out.empty()) {
-            targets.Add(FileSink(opts.out));
-        }
-        targets.Add(EdrSink(&edr));
-        agent.Subscribe(std::move(targets));
         std::unique_ptr<IEventSource> source;
         if (opts.use_file) {
             source = std::make_unique<FileSource>(opts.path);
         } else {
             source = std::make_unique<OsSource>(opts.path);
         }
+        Agent agent(opts.quiet, dedup_period_ms);
+        FanOutSink targets;
+        targets.Add(ConsoleSink());
+        if (!opts.out.empty()) targets.Add(FileSink(opts.out));
+        targets.Add(EdrSink(&edr));
+        agent.Subscribe(std::move(targets));
+        agent.EnableResponse(source->os(), opts.dry_run, edr.Config("quarantine_dir", "C:\\quarantine"));
         source->Run(&agent);
 
         if (edr.Flush() != EDR_OK) {
             std::print(stderr, "[WARN] детекты не отправлены\n");
+        }
+        agent.PrintSummary();
+        if (opts.copies) {
+            auto& stats = copy_stats();
+            std::print("[COPY] строк события скопировано {}, перемещено {}\n", stats.event_strings_copied, stats.event_strings_moved);
+            std::print("[COPY] записей WindowEntry скопировано {}, перемещено {}\n", stats.window_copied, stats.window_moved);
+            std::print("[COPY] событий скопировано в детекты {}\n", stats.evidence_copied);
+            std::print("[COPY] копий всего {}\n", stats.total());
         }
         agent.PrintSummary();
         return 0;
