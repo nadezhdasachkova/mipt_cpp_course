@@ -1,11 +1,13 @@
 #include "sources.h"
-#include "parse.h"
-#include "os.h"
-#include "os_handle.h"
+
 #include <fstream>
 #include <print>
 #include <stdexcept>
 #include <utility>
+
+#include "os.h"
+#include "os_handle.h"
+#include "parse.h"
 namespace nano_edr {
 FileSource::FileSource(std::string path) : path_(std::move(path)) {}
 void FileSource::Run(IEventHandler* handler) {
@@ -70,4 +72,4 @@ void OsSource::Run(IEventHandler* handler) {
         throw std::runtime_error(std::string("os: ") + os_status_str(status));
     }
 }
-}
+}  // namespace nano_edr

@@ -87,6 +87,7 @@ int main(int argc, char** argv) {
             std::print("[COPY] событий скопировано в детекты {}\n", stats.evidence_copied);
             std::print("[COPY] копий всего {}\n", stats.total());
         }
+        agent.PrintSummary();
         return 0;
     } catch (const std::exception& e) {
         std::print(stderr, "ошибка: {}\n", e.what());

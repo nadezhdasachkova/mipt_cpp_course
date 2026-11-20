@@ -78,7 +78,10 @@ std::string ToString(const Event& event) {
         out += " pid="; out += event.pid(); 
     }
     for (const Field& f : event.fields()) {
-        out += ' '; out += f.key; out += '='; out += f.value;
+        out += ' ';
+        out += f.key;
+        out += '=';
+        out += f.value;
     }
     return out;
 }

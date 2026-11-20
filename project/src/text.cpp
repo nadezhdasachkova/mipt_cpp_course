@@ -1,4 +1,5 @@
 #include "text.h"
+
 #include <cctype>
 #include <cstddef>
 namespace nano_edr {
@@ -6,7 +7,7 @@ namespace {
 char ToLowerAscii(char c) {
     return static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 }
-}
+}  // namespace
 bool EqualsIgnoreCase(const std::string& a, const std::string& b) {
     if (a.size() != b.size()) {
         return false;
@@ -51,4 +52,4 @@ bool EndsWithIgnoreCase(const std::string& str, const std::string& suffix) {
     }
     return true;
 }
-}
+}  // namespace nano_edr

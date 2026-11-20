@@ -36,7 +36,6 @@ std::unique_ptr<MatchRule> MakeScriptHostFromTemp() {
     rule->AddAction("delete_dropped");
     return rule;
 }
-
 std::unique_ptr<MatchRule> MakeLolbinDownload() {
     auto rule = std::make_unique<MatchRule>("lolbin_download", Severity::kHigh);
     auto all = std::make_unique<AllOf>();
@@ -117,8 +116,7 @@ std::unique_ptr<SequenceRule> MakeScriptHostBeacon() {
 std::unique_ptr<ThresholdRule<128>> MakeRansomwareMassWrite() {
     auto rule = MakeRule<ThresholdRule<128>>("ransomware_mass_write", Severity::kCritical, 20, 10000, "pid");
     rule->SetCondition(MakeCondition(
-        AllOfStatic(EventTypeIs({EventType::kFileCreate, EventType::kFileWrite,
-                                 EventType::kFileMove}),
+        AllOfStatic(EventTypeIs({EventType::kFileCreate, EventType::kFileWrite, EventType::kFileMove}),
                     AnyOfStatic(FieldContains("path", "\\documents\\"),
                                 FieldContains("path", "/documents/"),
                                 FieldContains("to", "\\documents\\"),
@@ -178,4 +176,4 @@ RuleEngine BuildAgentRules(const EntityModel* model) {
     engine.AddRule(MakeSpawnedFromDroppedFile(model));
     return engine;
 }
-}  // namespace nano_edr 
+}  // namespace nano_edr
